@@ -1,0 +1,9 @@
+name: ci workflow
+on: [push, pull_request]
+jobs:
+  compile_job:
+    name: project compile
+    runs-on: self-hosted
+    steps:
+      name: maven compile
+      run: mvn clean compile -DskipTests
