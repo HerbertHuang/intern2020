@@ -1,0 +1,15 @@
+.gradle
+.idea
+.iml
+**/out
+build
+git_stats
+**/*.log.gz
+**/*.log
+**/*.iml
+**/build
+*.ipr
+*.iws
+**/node_modules/**
+**/.DS_Store
+**/.clover
