@@ -69,6 +69,9 @@ public class WordCount {
                 }
             } catch (IOException e) {
                 throw new IOException(String.format("%s read failed", file.getName()), e);
+            } finally {
+                bufferedReader.close();
+                inputStream.close();
             }
             return result;
         }
