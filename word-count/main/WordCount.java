@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-public class wordcount {
+public class WordCount {
     final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static void main(String[] args)
@@ -36,13 +36,10 @@ public class wordcount {
         final List<File> filePathsList = new ArrayList<File>();
         //返回文件路径内的文件列表
         File[] filePaths = f.listFiles();
-        if (filePaths != null) {
-            for (File s : filePaths) {
-                filePathsList.add(s);
-            }
+        for (File s : filePaths) {
+            filePathsList.add(s);
         }
 
-        CountDownLatch latch = new CountDownLatch(filePathsList.size());
         //创建线程池
         ExecutorService pool = Executors.newFixedThreadPool(10);
         //阻塞队列
@@ -53,20 +50,12 @@ public class wordcount {
         for (int i = 0; i < filePathsList.size(); i++) {
             File temp = filePathsList.get(i);
             //提交执行
-            Future<Map<String,FileInputStream>> future = pool.submit(new FileRead(latch, temp));
+            Future<Map<String,FileInputStream>> future = pool.submit(new FileRead(temp));
             queue.add(future);
             pool.execute(new FileWrite(queue));
-
-
-        }
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
         System.out.println("-------------文件读、写任务结束时间：" + sdf.format(new Date()));
-        pool.shutdownNow();
+        pool.shutdown();
     }
 
 
@@ -75,16 +64,16 @@ public class wordcount {
     // 文件读线程
     static class FileRead implements Callable<Map<String, FileInputStream>>
     {
-        private CountDownLatch latch;
+
         private File file;
         private FileInputStream fis = null;
         private Map<String, FileInputStream> fileMap = new HashMap<String, FileInputStream>();
-        private int res;
 
 
-        public FileRead(CountDownLatch latch, File file)
+
+        public FileRead( File file)
         {
-            this.latch = latch;
+
             this.file = file;
         }
 
@@ -94,10 +83,7 @@ public class wordcount {
             System.out.println(Thread.currentThread().getName() + " 线程开始读取文件 ：" + file.getName() + " ,时间为 "+ sdf.format(new Date()));
             fis = new FileInputStream(file);
             fileMap.put(file.getName(), fis);
-            //int res = doWork(); //统计单词数量
-            //countWord();
             System.out.println(Thread.currentThread().getName() + " 线程读取文件 ：" + file.getName() + " 完毕"  + " ,时间为 "+ sdf.format(new Date()));
-            latch.countDown();
             return fileMap;
 
         }
@@ -117,21 +103,20 @@ public class wordcount {
         private InputStreamReader isr = null;
         private FileWriter fw = null;
         private BufferedWriter bw = null;
-        private Map<String, Integer> map2 = new HashMap<>();
+        private Map<String, Integer> countMap = new HashMap<>();
 
-        public FileWrite (BlockingQueue<Future<Map<String,FileInputStream>>> queue2)
+        public FileWrite (BlockingQueue<Future<Map<String,FileInputStream>>> queue)
         {
-            this.queue = queue2;
+            this.queue = queue;
         }
 
         @Override
         public  void run()
         {
             try {
-                wordCountWrite();
-
+                    wordCountWrite();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
@@ -142,10 +127,8 @@ public class wordcount {
 
             Set<String> set = map.keySet();
             for (Iterator<String> iter = set.iterator(); iter.hasNext();) {
-
                 fileName = iter.next().toString();
                 fis = map.get(fileName);
-
                 System.out.println(Thread.currentThread().getName() + " 线程开始写文件 ：" + fileName  + " ,时间为 "+ sdf.format(new Date()));
                 try {
                     isr = new InputStreamReader(fis, "utf-8");
@@ -155,24 +138,14 @@ public class wordcount {
                     while((line = br.readLine()) != null){
                         String[] ss = line.split("\\s");
                         for(String s : ss){
-                            if(map2.containsKey(s)){
-                                map2.put(s, map2.get(s) + 1);
+                            if(countMap.containsKey(s)){
+                                countMap.put(s, countMap.get(s) + 1);
                             }else{
-                                map2.put(s, 1);
+                                countMap.put(s, 1);
                             }
                         }
                     }
-
                     write();
-
-                    //dirFile = new File("d:" + File.separator + "java" + File.separator + fileName);
-                    //fw = new FileWriter(dirFile);
-
-                    //String data = "";
-                    //bw.write(Thread.currentThread().getName() + " 线程开始写文件++++++++++++");
-                    //while ((data = br.readLine()) != null) {
-                    //bw.write(data + "\r");
-                    // }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -192,10 +165,10 @@ public class wordcount {
             FileWriter fw = new FileWriter("src/result1.txt",true);
             bw = new BufferedWriter(fw);
             synchronized (fw){
-                Set<Map.Entry<String,Integer>> set1 = map2.entrySet();
+                Set<Map.Entry<String,Integer>> countSet = countMap.entrySet();
                 int count = 0;
                 //结果写入新文件
-                for(Map.Entry<String, Integer> entry : set1){
+                for(Map.Entry<String, Integer> entry : countSet){
                     //System.out.println(entry);
                     if(count == 0) {
                         bw.write(fileName + " 词频统计: " + '\n');
