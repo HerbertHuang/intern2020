@@ -16,7 +16,7 @@
 
 - https-share
 
-完成一个文件共享服务，在服务器A上提供https文件下载功能，服务器A当有新文件（每个文件名中有数据时间字段，yyyyMMdd格式,格式如：VIM-NFV-RP-VM-20200722-001.gzip）写入后，会将文件的下载信息（消息格式见1.1)写入到kafka的SOURCE_CM的topic中，文件共享服务订阅SOURCE_CM这个topic，当有消息写入后接收消息然后将文件下载并上传到FTP服务器B上，对应目录比如是（/ftpuser/share//nfvo/APP-HZZX001/CM/20200722/VIM-NFV-RP-VM-20200722-001.gzip)，保持后面5层级目录名称不变，写完后发送通知消息到kafka中， kafka消息中包含文件命中的时间和ftp地址的全路径，kafka消息格式见1.2。中间在redis中记录，kafka消费，下载，写ftp，发送kafka四个阶段文件处理成功和失败数量。
+完成一个文件共享服务，在服务器A上提供https文件下载功能，服务器A当有新文件（每个文件名中有数据时间字段，yyyyMMdd格式,格式如：VIM-NFV-RP-VM-20200722-001.gzip）写入后，会将文件的下载信息（消息格式见1.1)写入到kafka的SOURCE_CM的topic中，文件共享服务订阅SOURCE_CM这个topic，当有消息写入后接收消息然后将文件下载并上传到FTP服务器B上，对应目录比如是（/ftpuser/share/nfvo/APP-HZZX001/CM/20200722/VIM-NFV-RP-VM-20200722-001.gzip)，保持后面5层级目录名称不变，写完后发送通知消息到kafka中， kafka消息中包含文件命中的时间和ftp地址的全路径，kafka消息格式见1.2。中间在redis中记录，kafka消费，下载，写ftp，发送kafka四个阶段文件处理成功和失败数量。
 1.1
 
 ```json
