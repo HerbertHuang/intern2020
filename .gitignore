@@ -13,3 +13,4 @@ git_stats
 **/node_modules/**
 **/.DS_Store
 **/.clover
+**/target
