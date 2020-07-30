@@ -1,7 +1,12 @@
-package cmsoft1;
+package org.example;
 /*
 多线程读取多个文本文件，并统计文件内单词数量，写入到一个结果文件中
  */
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -13,7 +18,7 @@ public class WordCount {
 
     public static void main(String[] args) {
         //文件路径
-        File f = new File("src/files");
+        File f = new File("src/main/resources/");
         final List<File> filePathsList = new ArrayList<File>();
         //返回文件路径内的文件列表
         File[] filePaths = f.listFiles();
@@ -26,7 +31,7 @@ public class WordCount {
         //阻塞队列
         BlockingQueue<Future<Map<String, FileInputStream>>> queue =
                 new ArrayBlockingQueue<Future<Map<String, FileInputStream>>>(100);
-        List<Future<List<String>>> futures = new ArrayList<>();
+        List<Future<List<String>>> futures = new ArrayList<Future<List<String>>>();
         System.out.println("-------------文件读、写任务开始时间：" + sdf.format(new Date()));
         for (int i = 0; i < filePathsList.size(); i++) {
             File temp = filePathsList.get(i);
@@ -59,9 +64,10 @@ public class WordCount {
         }
         //打印结果
         System.out.println(wordCount);
+        //结果写入文件
         BufferedWriter bufferedWriter = null;
         try {
-            FileWriter fileWriter = new FileWriter("src/result1.txt");
+            FileWriter fileWriter = new FileWriter("./result.txt");
             bufferedWriter = new BufferedWriter(fileWriter);
             Set<Map.Entry<String, AtomicInteger>> countSet = wordCount.entrySet();
             for (Map.Entry<String, AtomicInteger> entry : countSet) {
